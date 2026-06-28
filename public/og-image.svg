@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fdf6f0"/>
+      <stop offset="100%" stop-color="#f5ebe0"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ff5e3a"/>
+      <stop offset="100%" stop-color="#ffae00"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <!-- decorative API brackets -->
+  <text x="80" y="120" font-family="monospace" font-size="56" fill="#ff5e3a" opacity="0.15" font-weight="700">{ }</text>
+  <text x="1000" y="560" font-family="monospace" font-size="72" fill="#ff5e3a" opacity="0.1" font-weight="700">GET</text>
+  <!-- eyebrow -->
+  <text x="80" y="200" font-family="sans-serif" font-size="22" fill="#ff5e3a" font-weight="600" letter-spacing="3">OPENAPIHUB</text>
+  <!-- main headline -->
+  <text x="80" y="300" font-family="Georgia, serif" font-size="72" fill="#1a1a1a" font-weight="400">1,581 free public APIs.</text>
+  <text x="80" y="380" font-family="Georgia, serif" font-size="72" fill="#1a1a1a" font-weight="400">One place to find them.</text>
+  <!-- accent underline -->
+  <rect x="80" y="410" width="180" height="5" rx="2.5" fill="url(#accent)"/>
+  <!-- stats row -->
+  <text x="80" y="480" font-family="sans-serif" font-size="26" fill="#666">1,581 APIs &#183; 51 categories &#183; HTTPS &#183; Auth &#183; CORS metadata</text>
+  <text x="80" y="525" font-family="sans-serif" font-size="26" fill="#666">Searchable. No signup. No tracking.</text>
+  <!-- url footer -->
+  <text x="80" y="585" font-family="monospace" font-size="20" fill="#ff5e3a" font-weight="600">openapihub.410185103.workers.dev</text>
+</svg>

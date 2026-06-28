@@ -84,9 +84,13 @@ def social_meta(canonical, title, description):
         '<meta property="og:title" content="' + esc(title) + '">\n'
         '<meta property="og:description" content="' + esc(description) + '">\n'
         '<meta property="og:site_name" content="' + esc(SITE_NAME) + '">\n'
-        '<meta name="twitter:card" content="summary">\n'
+        '<meta property="og:image" content="' + esc(SITE_ORIGIN + '/og-image.png') + '">\n'
+        '<meta property="og:image:width" content="1200">\n'
+        '<meta property="og:image:height" content="630">\n'
+        '<meta name="twitter:card" content="summary_large_image">\n'
         '<meta name="twitter:title" content="' + esc(title) + '">\n'
         '<meta name="twitter:description" content="' + esc(description) + '">\n'
+        '<meta name="twitter:image" content="' + esc(SITE_ORIGIN + '/og-image.png') + '">\n'
     )
 
 
@@ -724,6 +728,7 @@ def main():
         shutil.rmtree(DIST)
     DIST.mkdir(parents=True)
     shutil.copy(SITE / "public" / "styles.css", DIST / "styles.css")
+    shutil.copy(SITE / "public" / "og-image.png", DIST / "og-image.png")
     write(DIST / "index.html", render_home())
     write(DIST / "categories" / "index.html", render_categories())
     write(DIST / "about" / "index.html", render_about())
