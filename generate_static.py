@@ -469,13 +469,81 @@ def render_best_of():
             for i, a in enumerate(used)
         ],
     }
-    extra = '<script type="application/ld+json">' + json.dumps(item_list) + '</script>'
+    faq = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {"@type": "Question",
+             "name": "What are the best free public APIs in 2026?",
+             "acceptedAnswer": {"@type": "Answer",
+              "text": "The most useful free APIs include OpenWeatherMap and Open-Meteo for weather, GitHub and Google Firebase for development, CoinGecko for crypto prices, NASA for science data, and Unsplash for photos. All have meaningful free tiers and are listed in this directory."}},
+            {"@type": "Question",
+             "name": "Which free API is best for a side project?",
+             "acceptedAnswer": {"@type": "Answer",
+              "text": "For side projects, Open-Meteo is ideal because it needs no API key or signup, while REST Countries and Exchangerate.host also work with zero configuration. GitHub and Firebase are the fastest paths to a working backend."}},
+            {"@type": "Question",
+             "name": "Do these free APIs require an API key?",
+             "acceptedAnswer": {"@type": "Answer",
+              "text": "Some do (OpenWeatherMap, GitHub at higher rate limits, Spotify) and some do not (Open-Meteo, REST Countries, Exchangerate.host). Each API page in this directory shows its auth requirement so you can pick before signing up."}},
+        ],
+    }
+    extra = ('<script type="application/ld+json">' + json.dumps(item_list) + '</script>\n'
+            + '<script type="application/ld+json">' + json.dumps(faq) + '</script>')
     return layout(
         "Best free public APIs in 2026 - curated by " + SITE_NAME,
         "The " + str(len(used)) + " most useful free APIs for side projects, "
         "hackathons, and learning REST -- curated by " + SITE_NAME + ".",
         SITE_ORIGIN + "/best-free-apis-2026",
         body, extra)
+
+
+
+def render_sitemap_xml():
+    """Structured XML sitemap with priority/changefreq. Google prefers .xml over
+    raw .txt and uses lastmod to schedule crawls -> faster indexing -> traffic.
+    One file is fine: 1637 URLs is well under the 50k/50MB limit."""
+    import datetime
+    lastmod = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
+    urls = ""
+    # home — highest priority
+    urls += (
+        "<url><loc>" + esc(SITE_ORIGIN + "/") + "</loc>"
+        "<lastmod>" + lastmod + "</lastmod>"
+        "<changefreq>weekly</changefreq><priority>1.0</priority></url>\n"
+    )
+    # best-of editorial — high priority (money page)
+    urls += (
+        "<url><loc>" + esc(SITE_ORIGIN + "/best-free-apis-2026") + "</loc>"
+        "<lastmod>" + lastmod + "</lastmod>"
+        "<changefreq>monthly</changefreq><priority>0.9</priority></url>\n"
+    )
+    # categories + search + about
+    for path in ["/categories", "/search", "/about"]:
+        urls += (
+            "<url><loc>" + esc(SITE_ORIGIN + path) + "</loc>"
+            "<lastmod>" + lastmod + "</lastmod>"
+            "<changefreq>weekly</changefreq><priority>0.8</priority></url>\n"
+        )
+    # category pages
+    for c in CATS:
+        urls += (
+            "<url><loc>" + esc(SITE_ORIGIN + "/c/" + c["categorySlug"]) + "</loc>"
+            "<lastmod>" + lastmod + "</lastmod>"
+            "<changefreq>weekly</changefreq><priority>0.7</priority></url>\n"
+        )
+    # detail pages
+    for a in ITEMS:
+        urls += (
+            "<url><loc>" + esc(SITE_ORIGIN + "/api/" + a["slug"]) + "</loc>"
+            "<lastmod>" + lastmod + "</lastmod>"
+            "<changefreq>monthly</changefreq><priority>0.6</priority></url>\n"
+        )
+    return (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        + urls +
+        '</urlset>\n'
+    )
 
 
 def render_rss():
@@ -564,7 +632,11 @@ def main():
     for a in ITEMS:
         urls.append(origin + "/api/" + a["slug"])
     write(DIST / "sitemap.txt", "\n".join(urls) + "\n")
-    write(DIST / "robots.txt", "User-agent: *\nAllow: /\nSitemap: " + origin + "/sitemap.txt\n")
+    write(DIST / "sitemap.xml", render_sitemap_xml())
+    write(DIST / "robots.txt",
+          "User-agent: *\nAllow: /\n\n"
+          + "Sitemap: " + origin + "/sitemap.xml\n"
+          + "Sitemap: " + origin + "/sitemap.txt\n")
     idx = [{"n": a["name"], "d": a["description"], "c": a["category"], "s": a["slug"]} for a in ITEMS]
     write(DIST / "search-index.js", "window.__APIS__ = " + json.dumps(idx) + ";\n")
     sys.stdout.reconfigure(encoding="utf-8")
