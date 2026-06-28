@@ -107,3 +107,12 @@ h2{font-size:clamp(1.6rem,3vw,2.2rem);}
 .donate-link:hover{filter:brightness(1.05);}
 .rail-donate{margin-top:0.5rem;padding-top:0.6rem;border-top:1px dashed var(--line);}
 .rail-donate a{color:#ff5e3a !important;font-weight:600;}
+.newsletter{margin:2.5rem 0;}
+.newsletter-card{background:linear-gradient(135deg,#0d1117,#161b22);border:1px solid var(--line);border-radius:18px;padding:2.2rem;text-align:center;color:#f0f6fc;}
+.newsletter-card h2{font-family:"Instrument Serif",serif;font-size:2rem;margin:0 0 0.4rem;color:#fff;}
+.newsletter-sub{color:#8b949e;margin:0 0 1.3rem;font-size:0.95rem;}
+.newsletter-form{display:flex;gap:0.5rem;max-width:440px;margin:0 auto;flex-wrap:wrap;justify-content:center;}
+.newsletter-form input{flex:1;min-width:200px;padding:0.8rem 1rem;border-radius:10px;border:1px solid #30363d;background:#0d1117;color:#f0f6fc;font-size:0.95rem;}
+.newsletter-form input:focus{outline:none;border-color:var(--accent);}
+.newsletter-form button{padding:0.8rem 1.4rem;border-radius:10px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#0d1117;font-weight:700;cursor:pointer;font-size:0.95rem;}
+.newsletter-note{margin:0.9rem 0 0;font-size:0.82rem;color:#6e7681;}

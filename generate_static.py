@@ -25,6 +25,17 @@ AFFILIATE_SUPABASE = os.environ.get("AFFILIATE_SUPABASE", "https://supabase.com"
 # Donation / tip-jar link (BuyMeACoffee, Ko-fi, GitHub Sponsors). No approval
 # needed, pays out immediately. Leave blank to hide the CTA.
 DONATE_URL = os.environ.get("DONATE_URL", "")
+# Email newsletter signup. The single most valuable monetization asset for a
+# dev-tools site (10-50x ad RPM, no approval needed, compounds over time).
+# Works with any provider whose form accepts a plain POST to a URL:
+#   Buttondown (free):  https://buttondown.email  -> your newsletter -> settings
+#                       -> copy the form action URL
+#   ConvertKit:         https://convertkit.com     -> create a form -> embed
+#                       -> take the form action URL
+#   Listmonk (self-host): your-instance/subscription
+# Set NEWSLETTER_FORM_URL to that action URL. Set NEWSLETTER_LIST to a heading.
+NEWSLETTER_FORM_URL = os.environ.get("NEWSLETTER_FORM_URL", "")
+NEWSLETTER_HEADING = os.environ.get("NEWSLETTER_HEADING", "Get one new API worth integrating, every week")
 # utm_source stamped on every outgoing affiliate click so we can measure which
 # pages actually convert, in whatever analytics backend we later wire up.
 AFFILIATE_SOURCE = os.environ.get("AFFILIATE_SOURCE", "openapihub")
@@ -164,6 +175,25 @@ def affiliate_rail():
     )
 
 
+def newsletter_section():
+    """Email capture. The highest-ROI asset on a dev site. Renders nothing if
+    NEWSLETTER_FORM_URL is unset, so the site stays clean until configured.
+    Uses a plain POST form so it works statically with Buttondown/ConvertKit/etc."""
+    if not NEWSLETTER_FORM_URL:
+        return ""
+    return (
+        '<section class="newsletter wrap"><div class="newsletter-card">'
+        '<h2>' + esc(NEWSLETTER_HEADING) + '</h2>'
+        '<p class="newsletter-sub">One email. No spam. Unsubscribe anytime.</p>'
+        '<form class="newsletter-form" action="' + esc(NEWSLETTER_FORM_URL) + '" method="post" target="_blank" rel="noopener">'
+        '<input type="email" name="email" placeholder="you@example.com" required aria-label="Email address">'
+        '<button type="submit">Subscribe</button>'
+        '</form>'
+        '<p class="newsletter-note muted">Join developers building with public APIs.</p>'
+        '</div></section>'
+    )
+
+
 def render_home():
     top = CATS[:12]
     cat_cards = "".join(
@@ -207,6 +237,7 @@ def render_home():
         + affiliate_rail() +
         '</section>'
         '<section class="wrap">' + ad_slot("In-content ad") + '</section>'
+        + newsletter_section()
     )
     desc = "Browse " + str(len(ITEMS)) + " public APIs across " + str(len(CATS)) + " categories. Free developer directory with HTTPS, auth, and CORS metadata."
     home_ld = {

@@ -47,6 +47,17 @@ so you can see in the provider's dashboard which pages convert. Example of a
 fully-wired link after rebuild:
 `https://vercel.com/?ref=YOUR_ID&utm_source=openapihub&utm_medium=affiliate&utm_campaign=detail-deploy`
 
+### 2b. Email newsletter (the highest-ROI asset, do this early)
+A subscriber list is worth 10-50x the ad revenue per user, needs NO approval,
+and compounds. Sign up free at https://buttondown.email (purpose-built for
+developer newsletters, free up to 100 subscribers):
+- Create a newsletter -> Settings -> copy the **form action URL**
+- Set env var: `NEWSLETTER_FORM_URL=https://buttondown.email/api/emails/yournews`
+- The dark "Get one new API worth integrating, every week" capture card appears
+  on the homepage. Visitors who subscribe become a re-marketable asset you can
+  email forever — promote affiliate deals, your own products, paid content.
+- Later: email the list weekly with "API of the week" + your affiliate links.
+
 ### 3. Free analytics (see what actually gets traffic)
 - Cloudflare dashboard → **Web Analytics** → **Add a site** → paste your
   `*.workers.dev` URL → copy the `token` from the snippet
