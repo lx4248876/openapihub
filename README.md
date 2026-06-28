@@ -1,73 +1,102 @@
-# OpenAPIHub - public API directory site
+# OpenAPIHub
 
-A real, deployable developer directory of 1500+ public APIs, monetized
-through display ads and affiliate links. Built around the open-source
-[public-apis](https://github.com/public-apis/public-apis) dataset.
+> A free, searchable directory of **1,581 public APIs** across 51 categories — with HTTPS, auth, and CORS metadata for every entry.
 
-## What this is
+**Live site:** https://openapihub.410185103.workers.dev
 
-A static site (no backend) that has:
-- 1,581 real API detail pages
-- 51 category pages
-- Home, About, Search, 404
-- sitemap.txt with 1,636 real URLs
-- robots.txt
-- JSON-LD structured data on every detail page
-- AdSense ad slots
-- Affiliate CTAs for Vercel, Render, Supabase
+Built for developers who want to find the right API fast, without wading through
+bloated marketplaces or paywalled directories. Every entry links to real
+documentation. No signup, no tracking, no upsell.
 
-## Why static instead of dynamic
+---
 
-Static hosting on Cloudflare Pages is free and does not require a
-credit card. Dynamic hosting on Render Free requires a verified
-account with payment method. So this version generates the whole
-site upfront into dist/ and serves only static files.
+## Why you might actually use this
 
-## Local development
+- **1,581 real APIs**, each with its own detail page — not a flat list. Every page
+  shows category, auth requirement (apiKey / OAuth / none), HTTPS support, CORS
+  status, and a direct link to the official docs.
+- **51 categories** — Weather, Cryptocurrency, Geocoding, Music, Games, Machine
+  Learning, Open Data, and more. Browse a category and see every API in it at a
+  glance.
+- **Client-side search** — the full directory is searchable in-browser with no
+  server round-trip. Type "weather" or "crypto" and filter instantly.
+- **An editorial best-of page** — [`/best-free-apis-2026`](https://openapihub.410185103.workers.dev/best-free-apis-2026)
+  picks the 16 APIs worth reaching for first (OpenWeatherMap, GitHub, NASA,
+  Unsplash, CoinGecko, …) with notes on *when* to choose each one.
+- **Related APIs on every detail page** — see 3 same-category alternatives
+  without leaving the page.
+- **RSS feed** — subscribe to [`/feed.xml`](https://openapihub.410185103.workers.dev/feed.xml)
+  in feedly or Inoreader to get new APIs as they are added.
+
+## What is in this repo
+
+| Path | What it is |
+|---|---|
+| `generate_static.py` | The static site generator. Reads `data/apis.json`, writes `dist/`. |
+| `data/apis.json` | 1,581 API records (name, slug, description, category, auth, https, cors, url). |
+| `dist/` | The generated, deployable static site (~1,640 files). |
+| `wrangler.toml` + `src/worker.js` | Cloudflare Workers config. The Worker is a thin stub; static files are served via the `[assets]` binding. |
+| `scripts/gen_article.py` | Regenerates the dev.to-ready backlink article from the dataset. |
+| `scripts/publish/` | A ready-to-publish Markdown article + a guide for building dofollow backlinks via dev.to / Hashnode. |
+| `REVENUE.md` | The phased monetization roadmap. |
+
+## Built the right way
+
+- **Static.** No database, no runtime, no attack surface. Free to host forever
+  on Cloudflare Workers — no credit card required.
+- **SEO-complete.** Open Graph + Twitter cards sitewide, `WebSite` + `SearchAction`
+  JSON-LD on the home page, `ItemList` on category pages, `WebAPI` + `BreadcrumbList`
+  on detail pages, `FAQPage` on the editorial page, and a structured
+  `sitemap.xml` with lastmod for all 1,637 URLs.
+- **Fast.** Pure HTML/CSS, one tiny JS file for search. Lighthouse-friendly by
+  construction.
+- **Not AI slop.** Every page is generated from structured data, not from a
+  language model hallucinating endpoints. The editorial notes are hand-written
+  opinions on APIs that genuinely exist in the dataset.
+
+## Run it locally
 
 ```powershell
 cd site
-python ..\scripts\fetch-apis-site.py    # refresh data/apis.json
-python generate_static.py               # rebuild dist/
-```
-
-To preview locally, use any static server, for example:
-
-```powershell
+python generate_static.py      # rebuild dist/ from data/apis.json
 cd dist
 python -m http.server 4781
 ```
 
 Then open http://localhost:4781/
 
-## Environment variables (used by generate_static.py)
+## Deploy your own
 
-| Variable | Purpose | Example |
-|---|---|---|
-| SITE_NAME | Brand name | OpenAPIHub |
-| SITE_TAGLINE | Tagline | A free directory of public APIs for developers |
-| SITE_ORIGIN | Canonical public URL | https://openapihub.pages.dev |
-| ADSENSE_CLIENT | AdSense client id | ca-pub-1234 |
-| AFFILIATE_VERCEL | Vercel affiliate link | https://vercel.com/?ref=you |
-| AFFILIATE_RENDER | Render affiliate link | https://render.com/?ref=you |
-| AFFILIATE_SUPABASE | Supabase affiliate link | https://supabase.com/?ref=you |
+This repo is already wired to deploy on push. To deploy your own copy:
 
-## Deploy
+1. Fork it.
+2. Connect the repo to Cloudflare Workers (dash.cloudflare.com → Workers →
+   Create → Connect to Git). Build command: `python site/generate_static.py`.
+   Build output: `site/dist`.
+3. That is it. Cloudflare rebuilds and deploys on every push.
 
-Follow LAUNCH_TODO.md for step-by-step Cloudflare Pages deployment.
+## Monetization
 
-In short:
+Five channels are wired in `generate_static.py`, each enabled by setting an
+environment variable before build (see `.env.example`):
 
-1. Push this repo to GitHub (already done)
-2. Connect Cloudflare Pages to the GitHub repo
-3. Build output directory: site/dist
-4. Build command: python site/generate_static.py
-5. Add environment variables
-6. Deploy
+- **AdSense** (`ADSENSE_CLIENT`) — four ad slots auto-populate.
+- **Affiliate links** (`AFFILIATE_VERCEL` / `AFFILIATE_RENDER` / `AFFILIATE_SUPABASE`) —
+  every outbound affiliate click is UTM-stamped for attribution.
+- **Newsletter capture** (`NEWSLETTER_FORM_URL`) — homepage dark hero card,
+  works with Buttondown or ConvertKit.
+- **Tip jar** (`DONATE_URL`) — footer + sidebar CTA.
+- **Analytics** (`CF_ANALYTICS_TOKEN` or `PLAUSIBLE_DOMAIN`) — cookieless.
 
-## Reality check
+None of these are active until you set the variables, so the default build
+ships clean with no third-party scripts.
 
-- SEO traction for a new domain typically takes 3-12 months
-- AdSense approval is not guaranteed; common rejections cite thin content
-- The dataset refresh cadence is the main SEO signal
-- Pure AI text pages are NOT added. Each page is structured data
+## Data source
+
+Built around the open-source [public-apis](https://github.com/public-apis/public-apis)
+dataset, enriched and structured for a browsable directory.
+
+## License
+
+MIT for the code and site structure. API metadata follows the upstream
+public-apis dataset license.
