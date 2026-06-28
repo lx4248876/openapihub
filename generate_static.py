@@ -39,6 +39,16 @@ NEWSLETTER_HEADING = os.environ.get("NEWSLETTER_HEADING", "Get one new API worth
 # utm_source stamped on every outgoing affiliate click so we can measure which
 # pages actually convert, in whatever analytics backend we later wire up.
 AFFILIATE_SOURCE = os.environ.get("AFFILIATE_SOURCE", "openapihub")
+# --- Direct monetization: sellable sponsored placements ---
+# No payment gateway needed. Buyers reach you via these channels; you fulfill
+# the placement manually once paid. Register any ONE to go live.
+SPONSOR_BMC = os.environ.get("SPONSOR_BMC", "")
+SPONSOR_KOFI = os.environ.get("SPONSOR_KOFI", "")
+SPONSOR_GITHUB = os.environ.get("SPONSOR_GITHUB", "")
+SPONSOR_EMAIL = os.environ.get("SPONSOR_EMAIL", "410185103@qq.com")
+SPONSOR_PRICE_TOP = os.environ.get("SPONSOR_PRICE_TOP", "49")
+SPONSOR_PRICE_CATEGORY = os.environ.get("SPONSOR_PRICE_CATEGORY", "29")
+SPONSOR_PRICE_DETAIL = os.environ.get("SPONSOR_PRICE_DETAIL", "19")
 
 
 def aff_url(base, medium, campaign):
@@ -139,6 +149,7 @@ def layout(title, description, canonical, body, extra_head=""):
         '<a href="/categories">Categories</a>'
         '<a href="/search">Search</a>'
         '<a href="/about">About</a>'
+        '<a href="/sponsor">Sponsor</a>'
         '</nav></div></header>\n'
         '<main>\n' + body + '\n</main>\n'
         '<footer class="site-footer"><div class="wrap">'
@@ -526,6 +537,12 @@ def render_sitemap_xml():
         "<lastmod>" + lastmod + "</lastmod>"
         "<changefreq>monthly</changefreq><priority>0.9</priority></url>\n"
     )
+    # sponsor page (money page)
+    urls += (
+        "<url><loc>" + esc(SITE_ORIGIN + "/sponsor") + "</loc>"
+        "<lastmod>" + lastmod + "</lastmod>"
+        "<changefreq>monthly</changefreq><priority>0.8</priority></url>\n"
+    )
     # categories + search + about
     for path in ["/categories", "/search", "/about"]:
         urls += (
@@ -585,6 +602,90 @@ def render_rss():
     )
 
 
+def _sponsor_cta(label):
+    links = ""
+    if SPONSOR_BMC:
+        links += '<a class="buy-btn primary" href="' + esc(SPONSOR_BMC) + '" rel="noopener" target="_blank">' + esc(label) + ' via Buy Me a Coffee</a>'
+    if SPONSOR_KOFI:
+        links += '<a class="buy-btn" href="' + esc(SPONSOR_KOFI) + '" rel="noopener" target="_blank">' + esc(label) + ' via Ko-fi</a>'
+    if SPONSOR_GITHUB:
+        links += '<a class="buy-btn" href="' + esc(SPONSOR_GITHUB) + '" rel="noopener" target="_blank">' + esc(label) + ' via GitHub Sponsors</a>'
+    if not links:
+        links = '<a class="buy-btn primary" href="mailto:' + esc(SPONSOR_EMAIL) + '?subject=' + esc(label) + ' on ' + esc(SITE_NAME) + '">Email to claim</a>'
+    return links
+
+
+def render_sponsor():
+    """Direct monetization: sell ad placements to API providers. The proven
+    revenue model for API directories (RapidAPI, API List, etc.). No payment
+    gateway or credit card needed to launch - buyers contact us, we fulfill."""
+    plan_top = (
+        '<div class="sponsor-plan">'
+        '<div class="plan-head"><h2>Homepage top banner</h2>'
+        '<span class="plan-price">$' + esc(SPONSOR_PRICE_TOP) + '<small>/mo</small></span></div>'
+        '<p>The highest-visibility slot. Shows above the fold on the homepage to every visitor who lands on the site. One slot only - exclusive.</p>'
+        '<p class="plan-stats">Reach: 100% of homepage visitors. Placement: hero banner. Format: text + link or 728x90.</p>'
+        + _sponsor_cta("Claim top banner") +
+        '</div>'
+    )
+    plan_cat = (
+        '<div class="sponsor-plan">'
+        '<div class="plan-head"><h2>Category page featured</h2>'
+        '<span class="plan-price">$' + esc(SPONSOR_PRICE_CATEGORY) + '<small>/mo</small></span></div>'
+        '<p>Pinned to the top of a category page (e.g. Weather, Crypto, Payments). Your API appears first when a developer browses that category - the moment they are choosing.</p>'
+        '<p class="plan-stats">51 categories available. 1 featured slot per category.</p>'
+        + _sponsor_cta("Claim category slot") +
+        '</div>'
+    )
+    plan_detail = (
+        '<div class="sponsor-plan">'
+        '<div class="plan-head"><h2>Detail page highlight</h2>'
+        '<span class="plan-price">$' + esc(SPONSOR_PRICE_DETAIL) + '<small>/mo</small></span></div>'
+        '<p>A "Sponsored" badge and top placement on a specific API page, or a callout in the related-APIs rail. Best for competing with a specific API.</p>'
+        '<p class="plan-stats">Reach: visitors to specific API pages. Badge: "Sponsored".</p>'
+        + _sponsor_cta("Claim detail slot") +
+        '</div>'
+    )
+    how = (
+        '<h2>How it works</h2>'
+        '<ol class="howto">'
+        '<li>Pick a slot above and pay via Buy Me a Coffee, Ko-fi, GitHub Sponsors, or email.</li>'
+        '<li>Reply to the confirmation with your creative (text + link, or a 728x90 banner for the top slot).</li>'
+        '<li>We place it within 24 hours and send you the live URL. Cancel anytime.</li>'
+        '</ol>'
+        '<h2>Why sponsor an API directory?</h2>'
+        '<p>Developers who browse an API directory are <em>actively choosing</em> what to integrate. That is the highest-intent audience in developer marketing - not passive readers, but people with a decision to make right now. A sponsored slot puts your API in front of them at exactly that moment.</p>'
+        '<p class="muted">Want a custom placement or to sponsor the whole site? <a href="mailto:' + esc(SPONSOR_EMAIL) + '?subject=Custom sponsorship">Email us</a>.</p>'
+    )
+    body = (
+        '<section class="wrap">'
+        '<nav class="crumbs"><a href="/">Home</a> &rsaquo; <span>Sponsor</span></nav>'
+        '<p class="eyebrow">Direct monetization</p>'
+        '<h1>Sponsor ' + esc(SITE_NAME) + '</h1>'
+        '<p class="lede">Put your API in front of developers at the exact moment they are choosing what to integrate. Sponsored placements are the cleanest revenue model for a directory - no ad networks, no tracking, just your product where it matters.</p>'
+        + plan_top + plan_cat + plan_detail + how +
+        '</section>'
+    )
+    ld = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {"@type": "Question",
+             "name": "How much does it cost to sponsor an API directory listing?",
+             "acceptedAnswer": {"@type": "Answer",
+              "text": "Sponsored placements start at $" + SPONSOR_PRICE_DETAIL + "/month for a detail-page highlight, $" + SPONSOR_PRICE_CATEGORY + "/month for a category featured slot, and $" + SPONSOR_PRICE_TOP + "/month for the homepage top banner."}},
+            {"@type": "Question",
+             "name": "How do I pay for a sponsored API listing?",
+             "acceptedAnswer": {"@type": "Answer",
+              "text": "Pay via Buy Me a Coffee, Ko-fi, GitHub Sponsors, or email. No long-term contract - sponsor month to month and cancel anytime."}},
+        ],
+    }
+    extra = '<script type="application/ld+json">' + json.dumps(ld) + '</script>'
+    desc = ("Sponsor " + SITE_NAME + ": advertise your API to developers actively "
+            "choosing what to integrate. Plans from $" + SPONSOR_PRICE_DETAIL + "/month.")
+    return layout("Sponsor " + SITE_NAME + " - advertise to developers",
+                  desc, SITE_ORIGIN + "/sponsor", body, extra)
+
 def render_about():
     body = (
         '<section class="wrap">'
@@ -626,6 +727,7 @@ def main():
     write(DIST / "index.html", render_home())
     write(DIST / "categories" / "index.html", render_categories())
     write(DIST / "about" / "index.html", render_about())
+    write(DIST / "sponsor" / "index.html", render_sponsor())
     write(DIST / "search" / "index.html", render_search())
     write(DIST / "404.html", render_404())
     write(DIST / "best-free-apis-2026" / "index.html", render_best_of())
@@ -635,7 +737,7 @@ def main():
     for a in ITEMS:
         write(DIST / "api" / a["slug"] / "index.html", render_detail(a))
     origin = SITE_ORIGIN
-    urls = [origin + "/", origin + "/categories", origin + "/about", origin + "/search", origin + "/best-free-apis-2026"]
+    urls = [origin + "/", origin + "/categories", origin + "/about", origin + "/search", origin + "/best-free-apis-2026", origin + "/sponsor"]
     for c in CATS:
         urls.append(origin + "/c/" + c["categorySlug"])
     for a in ITEMS:
