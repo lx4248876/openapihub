@@ -1,0 +1,10 @@
+# Cloudflare Pages configuration
+# Build command: regenerate the static site from data/apis.json
+# Output directory: dist
+
+name = "openapihub"
+pages_build_output_dir = "dist"
+
+# No build command needed if you prebuilt dist/ and committed it.
+# If you want Cloudflare to rebuild on every push, set:
+# build_command = "python generate_static.py"

@@ -1,269 +1,157 @@
-# OpenAPIHub - Launch TODO
+# OpenAPIHub - Launch on Cloudflare Pages (no credit card)
 
-Read this top to bottom. Do them in order. Do not skip steps.
-Each step tells you: where to click, what to type, and how to verify it worked.
-Estimated total time: 60-90 minutes if you do not get stuck on naming.
+This plan uses Cloudflare Pages. It is free and does not require a credit card.
+Total time: 30-45 minutes.
 
-------------------------------------------------------------
-## Phase 0 - Local final check (5 minutes)
-
-Goal: confirm the site still runs before pushing.
-
-[ ] 0.1 Open PowerShell in this folder:
-    C:\Users\41018\Documents\Codex\2026-05-11\new-chat\site
-
-[ ] 0.2 Run:
-    node src\server.js
-
-[ ] 0.3 Open these in your browser. All should load:
-    - http://localhost:4781/
-    - http://localhost:4781/categories
-    - http://localhost:4781/c/development
-    - http://localhost:4781/api/cat-facts
-    - http://localhost:4781/sitemap.txt
-
-[ ] 0.4 Stop the server with Ctrl+C in PowerShell.
-
-If any page is broken, stop and tell me before continuing.
+You already pushed the code to GitHub. Now we put it online.
 
 ------------------------------------------------------------
-## Phase 1 - GitHub repository (10 minutes)
+## Phase 1 - Sign up for Cloudflare (5 minutes)
 
-Goal: put the code on GitHub so Render can deploy it.
-
-[ ] 1.1 Sign in to https://github.com
-    If you do not have an account, create one (free).
-
-[ ] 1.2 Click the + icon in the top right -> New repository
-
-[ ] 1.3 Fill in:
-    - Repository name: openapihub
-    - Description: A free directory of public APIs for developers
-    - Public (recommended, Render free tier needs public repo)
-    - DO NOT check "Add a README"
-    - DO NOT add .gitignore (we already have one)
-
-[ ] 1.4 Click Create repository
-
-[ ] 1.5 On the next page, GitHub shows you commands under
-    "…or push an existing repository from the command line".
-    You will see a URL like:
-    https://github.com/your-username/openapihub.git
-    Copy that URL. Paste it here so you do not lose it:
-    YOUR_REPO_URL: ____________________________________
-
-[ ] 1.6 In PowerShell, inside the site folder, run:
-    git remote add origin https://github.com/YOUR_USERNAME/openapihub.git
-    git branch -M main
-    git push -u origin main
-
-    Replace YOUR_USERNAME with your real GitHub username.
-
-[ ] 1.7 Refresh the GitHub repo page. You should see your files
-    including src/server.js and data/apis.json.
+[ ] 1.1 Go to https://dash.cloudflare.com/sign-up
+[ ] 1.2 Use any email and a password
+[ ] 1.3 Solve the captcha and verify your email
+[ ] 1.4 You do NOT need to add a credit card. Skip any upsell.
 
 ------------------------------------------------------------
-## Phase 2 - Pick a domain (10 minutes, optional but recommended)
+## Phase 2 - Create the Pages project (15 minutes)
 
-Goal: have a real domain for SEO.
+[ ] 2.1 In the Cloudflare dashboard, left menu -> Workers & Pages
+[ ] 2.2 Click Create -> Pages -> Connect to Git
+[ ] 2.3 Connect your GitHub account if asked.
+      Authorize Cloudflare to access your GitHub.
+[ ] 2.4 Select the repository: lx4248876/openapihub
+[ ] 2.5 Set up the build:
+      - Project name: openapihub
+      - Production branch: main
+      - Framework preset: None
+      - Build command: leave EMPTY
+      - Build output directory: site/dist
+        (we already committed the prebuilt site)
+      - Root directory: leave EMPTY
 
-[ ] 2.1 Buy a domain at one of:
-    - https://www.namecheap.com
-    - https://www.porkbun.com
-    - https://www.cloudflare.com/products/registrar/
+[ ] 2.6 Click Save and Deploy
+[ ] 2.7 Wait for the deploy. It takes about 1-3 minutes.
+      You should see "Success" and a URL like:
+      https://openapihub.pages.dev
 
-    Pick something brandable, short, .com preferred.
-    Examples of the style: openapihub.com, apifind.com, useapis.dev
+[ ] 2.8 Click the URL. Verify:
+      - Home loads
+      - Click Categories
+      - Click a category, e.g. Development
+      - Click an API, e.g. Cat Facts
+      - Visit /sitemap.txt
+      - Visit /search?q=cat
 
-[ ] 2.2 Write your domain here:
-    YOUR_DOMAIN: ____________________________________
-
-    If you skip the domain for now, Render gives you a free
-    subdomain like openapihub.onrender.com which is fine to start.
-
-------------------------------------------------------------
-## Phase 3 - Sign up for affiliate programs (20 minutes)
-
-Goal: get real links that pay you.
-
-[ ] 3.1 Vercel affiliate program
-    Go to: https://vercel.com/affiliates
-    Sign up. They run it through Impact (https://app.impact.com).
-    After approval, get your Vercel affiliate URL.
-    Paste it here:
-    AFFILIATE_VERCEL: ____________________________________
-
-[ ] 3.2 Render referral
-    Go to: https://render.com referral dashboard inside your Render account.
-    Get your referral link.
-    Paste it here:
-    AFFILIATE_RENDER: ____________________________________
-
-[ ] 3.3 Supabase
-    Go to: https://supabase.com/affiliates
-    Sign up. They run it through Rewardful.
-    Get your Supabase affiliate URL.
-    Paste it here:
-    AFFILIATE_SUPABASE: ____________________________________
-
-If any of them reject you or take time, that is OK. Skip that one
-and use the default URL. You can fill it in later.
+[ ] 2.9 Paste your URL here:
+      PAGES_URL: ____________________________________
 
 ------------------------------------------------------------
-## Phase 4 - Sign up for Google AdSense (5 minutes, comes later)
+## Phase 3 - Set environment variables (5 minutes, optional)
 
-Goal: get ad revenue. This step takes longer in real time.
+[ ] 3.1 In Cloudflare Pages -> openapihub project -> Settings -> Environment variables
 
-[ ] 4.1 Go to: https://www.google.com/adsense/start/
-[ ] 4.2 Sign in with your Google account
-[ ] 4.3 Add your site URL (after Phase 5 deploy)
-[ ] 4.4 Google will review. This typically takes days to weeks.
-[ ] 4.5 After approval, get your client id, format ca-pub-XXXXXXXXX
-    Paste it here:
-    ADSENSE_CLIENT: ____________________________________
+[ ] 3.2 Add (Production):
+      SITE_NAME = OpenAPIHub
+      SITE_TAGLINE = A free directory of public APIs for developers
+      SITE_ORIGIN = https://openapihub.pages.dev
+                    (use your real PAGES_URL from 2.9)
+      ADSENSE_CLIENT = (leave blank until approved)
+      AFFILIATE_VERCEL = https://vercel.com
+      AFFILIATE_RENDER = https://render.com
+      AFFILIATE_SUPABASE = https://supabase.com
 
-AdSense will likely reject your first application because the
-domain is new. That is normal. Reapply after 30 days and 10+ good
-posts/refreshes. Until then ad slots show a friendly placeholder.
+[ ] 3.3 IMPORTANT: to apply these, you need a redeploy that
+      actually rebuilds the static files. So also add:
+      BUILD_COMMAND = python site/generate_static.py
 
-------------------------------------------------------------
-## Phase 5 - Deploy to Render (20 minutes)
+      And change:
+      Build output directory -> site/dist
+      Root directory -> (your repo root, leave empty)
 
-Goal: get a public URL.
-
-[ ] 5.1 Go to: https://render.com
-[ ] 5.2 Sign up with your GitHub account
-[ ] 5.3 Click New + -> Web Service
-[ ] 5.4 Connect your GitHub account if asked
-[ ] 5.5 Find and select your openapihub repo
-[ ] 5.6 Settings:
-    - Name: openapihub
-    - Region: closest to you
-    - Branch: main
-    - Runtime: Node
-    - Build Command: leave blank or "true" (we have no deps)
-    - Start Command: node src/server.js
-    - Instance Type: Free
-
-[ ] 5.7 Scroll down to Environment Variables. Add these:
-
-    Key                       Value
-    -------------------------------------------------------
-    NODE_VERSION              24.14.0
-    SITE_NAME                 OpenAPIHub
-    SITE_ORIGIN               https://openapihub.onrender.com
-                              (replace with your Render URL after first deploy)
-    ADSENSE_CLIENT            (paste from 4.5, or leave blank)
-    AFFILIATE_VERCEL          (paste from 3.1)
-    AFFILIATE_RENDER          (paste from 3.2)
-    AFFILIATE_SUPABASE        (paste from 3.3)
-
-[ ] 5.8 Click Create Web Service
-[ ] 5.9 Wait for the build to finish. Watch the logs.
-    You should see:
-    OpenAPIHub running on port 10000
-    Loaded 1581 APIs across 51 categories
-
-[ ] 5.10 When status is Live, click the URL Render gives you at
-    the top. Open it. Verify:
-    - Home page loads
-    - Click Categories
-    - Click a category
-    - Click an API
-    - sitemap.txt loads at /sitemap.txt
-
-[ ] 5.11 After deploy, copy your Render URL
-    (something like https://openapihub.onrender.com)
-    Paste it here:
-    RENDER_URL: ____________________________________
-
-[ ] 5.12 Go back to your service -> Environment
-    Update SITE_ORIGIN to your real Render URL
-    Trigger a manual deploy (Manual Deploy -> Deploy latest commit)
+[ ] 3.4 Trigger a redeploy:
+      Deployments -> most recent -> Retry deployment
 
 ------------------------------------------------------------
-## Phase 6 - Google Search Console (15 minutes)
+## Phase 4 - Google Search Console (10 minutes)
 
-Goal: tell Google you exist.
+[ ] 4.1 Go to https://search.google.com/search-console
+[ ] 4.2 Add property -> URL prefix -> paste your PAGES_URL
+[ ] 4.3 Verify with HTML tag method:
+      - Copy the meta tag content
+      - In your repo, edit site/generate_static.py
+      - In the layout function, after the canonical link, add:
+        <meta name="google-site-verification" content="YOUR_TAG" />
+      - Commit and push, Cloudflare will auto redeploy
 
-[ ] 6.1 Go to: https://search.google.com/search-console
-[ ] 6.2 Add a property -> URL prefix -> paste your Render URL
-[ ] 6.3 Verify. Easiest method is HTML tag:
-    - Copy the meta tag Google gives you
-    - In your repo, edit src/server.js
-    - Find the layout function, inside <head> add the meta tag
-    - Commit and push, Render will redeploy
+[ ] 4.4 Submit sitemap:
+      In Search Console -> Sitemaps -> enter: sitemap.txt -> Submit
 
-[ ] 6.4 After verification, submit your sitemap:
-    In Search Console -> Sitemaps -> Add new sitemap
-    Enter: sitemap.txt
-    Submit
-
-[ ] 6.5 Request indexing for your homepage:
-    URL inspection -> enter your home URL -> Request indexing
+[ ] 4.5 URL inspection -> enter your PAGES_URL -> Request indexing
 
 ------------------------------------------------------------
-## Phase 7 - Custom domain (10 minutes, optional)
+## Phase 5 - Custom domain (optional, costs about $10/year for a .com)
 
-Goal: move from openapihub.onrender.com to yourdomain.com
-
-[ ] 7.1 In Render -> your service -> Settings -> Custom Domains
-[ ] 7.2 Add your domain
-[ ] 7.3 Render gives you DNS records (CNAME or A)
-[ ] 7.4 Add those records at your domain registrar's DNS panel
-[ ] 7.5 Wait for DNS to propagate (minutes to hours)
-[ ] 7.6 Update SITE_ORIGIN env var to your custom domain
-[ ] 7.7 Update Google Search Console to add the custom domain
-    and submit sitemap.txt again
+[ ] 5.1 Buy a domain at https://porkbun.com or https://namecheap.com
+[ ] 5.2 In Cloudflare Pages -> openapihub -> Custom domains -> Set up a custom domain
+[ ] 5.3 Cloudflare will guide you through DNS setup
+[ ] 5.4 Update SITE_ORIGIN to your custom domain
+[ ] 5.5 Trigger a redeploy
+[ ] 5.6 Re-submit sitemap in Google Search Console
 
 ------------------------------------------------------------
-## Phase 8 - Weekly maintenance (ongoing)
+## Phase 6 - Weekly maintenance
 
-Goal: keep content fresh. Google rewards consistency.
+[ ] 6.1 Once a week locally:
+      cd C:\Users\41018\Documents\Codex\2026-05-11\new-chat\site
+      python ..\scripts\fetch-apis-site.py   # refresh data
+      python generate_static.py              # rebuild dist
+      git add data site\dist
+      git commit -m "Weekly data refresh"
+      git push
 
-[ ] 8.1 Once a week, locally run:
-    cd C:\Users\41018\Documents\Codex\2026-05-11\new-chat\site
-    npm run fetch
-    git add data/apis.json
-    git commit -m "Weekly data refresh"
-    git push
-
-[ ] 8.2 Render auto-deploys from main branch.
-
-[ ] 8.3 Once a month, check Search Console for new queries
-    your site is showing up for.
+[ ] 6.2 Cloudflare auto-deploys from main branch.
 
 ------------------------------------------------------------
 ## Common problems
 
-Problem: git push asks for password
-Fix: GitHub no longer accepts password auth. Use a Personal Access
-Token from Settings -> Developer settings -> Personal access tokens.
+Problem: Cloudflare says build failed because Python is missing
+Fix: On Cloudflare Pages, the default build environment already
+includes Python 3. Check that your Build command is exactly:
+python site/generate_static.py
 
-Problem: Render build fails
-Fix: Check logs. The most common cause is wrong Start Command.
-It must be exactly: node src/server.js
-
-Problem: Site loads but styles look broken
-Fix: Make sure public/styles.css is in the repo. If not, run:
-git add public/styles.css
+Problem: Site deployed but styles look broken
+Fix: Check that site/dist/styles.css is in the repo. If not:
+git add site/dist/styles.css
 git commit -m "Add styles"
 git push
 
-Problem: AdSense rejected
-Fix: This is normal. Continue refreshing content weekly.
-Reapply after 30 days.
+Problem: 404 on detail pages like /api/cat-facts
+Fix: Cloudflare Pages automatically maps /api/cat-facts to
+/api/cat-facts/index.html because we generated directory-style
+URLs. This should just work. If not, verify the path in sitemap.txt.
 
-Problem: No SEO traffic after 1 month
-Fix: This is expected. Real SEO traffic for a new domain starts
-showing between months 3 and 12. Keep refreshing data weekly.
+Problem: Search returns no results
+Fix: search-index.js must be present in site/dist/. If not,
+rebuild locally and recommit.
+
+------------------------------------------------------------
+## Cost summary
+
+- Cloudflare Pages: $0
+- GitHub: $0
+- Domain: ~$10/year, optional
+- Google Search Console: $0
+- Stripe / AdSense: paid to you when you qualify
+
+You can launch without a credit card on file anywhere.
 
 ------------------------------------------------------------
 ## Final notes
 
-This plan is honest. It does not promise money in week 1.
-It does promise: a real, deployable site, with real data,
-with real monetization slots, in less than 2 hours of clicking.
+This plan does not promise traffic in week 1.
+Real SEO traffic for a new domain typically starts at month 3-12.
+What this plan DOES give you: a real, public, indexed website
+that costs $0 to operate, with real monetization slots.
 
-If any step blocks you, tell me which step number and what error
-you see, and I will fix it.
+If any step fails, tell me the step number and the exact error.
