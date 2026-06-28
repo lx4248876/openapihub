@@ -195,13 +195,15 @@ def newsletter_section():
     """Email capture. The highest-ROI asset on a dev site. Renders nothing if
     NEWSLETTER_FORM_URL is unset, so the site stays clean until configured.
     Uses a plain POST form so it works statically with Buttondown/ConvertKit/etc."""
-    if not NEWSLETTER_FORM_URL:
-        return ""
+    # Fallback to Formsubmit.co (free, no signup, no account) so the site
+    # can collect emails even before NEWSLETTER_FORM_URL is configured.
+    # First submission triggers a one-time email confirmation to SPONSOR_EMAIL.
+    form_url = NEWSLETTER_FORM_URL or ("https://formsubmit.co/" + SPONSOR_EMAIL)
     return (
         '<section class="newsletter wrap"><div class="newsletter-card">'
         '<h2>' + esc(NEWSLETTER_HEADING) + '</h2>'
         '<p class="newsletter-sub">One email. No spam. Unsubscribe anytime.</p>'
-        '<form class="newsletter-form" action="' + esc(NEWSLETTER_FORM_URL) + '" method="post" target="_blank" rel="noopener">'
+        '<form class="newsletter-form" action="' + esc(form_url) + '" method="post" target="_blank" rel="noopener">'
         '<input type="email" name="email" placeholder="you@example.com" required aria-label="Email address">'
         '<button type="submit">Subscribe</button>'
         '</form>'
