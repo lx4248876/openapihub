@@ -127,6 +127,7 @@ def layout(title, description, canonical, body, extra_head=""):
         '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
         '<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">\n'
         '<link rel="stylesheet" href="/styles.css">\n'
+        + '<link rel="alternate" type="application/rss+xml" title="' + esc(SITE_NAME) + ' - latest APIs" href="/feed.xml">\n'
         + adsense_line + "\n"
         + extra_head + "\n"
         + analytics_head() + "\n"
@@ -305,6 +306,33 @@ def render_category(c):
                   SITE_ORIGIN + "/c/" + c["categorySlug"], body, cat_ld)
 
 
+
+def render_related(a):
+    """Up to 3 same-category APIs (excluding the current one) to lower bounce
+    rate and increase page views per visit -> more ad impressions + affiliate
+    clicks. Pure internal linking, no extra data needed."""
+    peers = [x for x in ITEMS if x["categorySlug"] == a["categorySlug"] and x["slug"] != a["slug"]]
+    peers.sort(key=lambda x: x["name"].lower())
+    if len(peers) > 6:
+        step = len(peers) // 3
+        peers = [peers[0], peers[step], peers[min(step * 2, len(peers) - 1)]]
+    peers = peers[:3]
+    if not peers:
+        return ""
+    cards = ""
+    for x in peers:
+        cards += (
+            '<a class="api-card related" href="/api/' + esc(x["slug"]) + '">'
+            '<h4>' + esc(x["name"]) + '</h4>'
+            '<p class="small">' + esc(x["description"][:90]) + '</p>'
+            '</a>'
+        )
+    return (
+        '<h2>Related ' + esc(a["category"]) + ' APIs</h2>'
+        '<div class="api-grid related-grid">' + cards + '</div>'
+    )
+
+
 def render_detail(a):
     body = (
         '<section class="wrap detail two-col"><article class="detail-main">'
@@ -330,6 +358,7 @@ def render_detail(a):
         '<li>Store your API key in environment variables, never in source files.</li>'
         '<li>Deploy your integration to a host such as Vercel or Render.</li>'
         '</ol>'
+        + render_related(a) +
         '</article>'
         + affiliate_rail() +
         '</section>'
@@ -363,6 +392,120 @@ def render_detail(a):
                   desc,
                   SITE_ORIGIN + "/api/" + a["slug"],
                   body, extra)
+
+
+
+# ---- Editorial: Best-of list. Real APIs only, hand-picked from the dataset. ----
+# Each entry pairs a real /api/<slug> page with an original, specific editorial
+# note (why a developer would pick it). This is curation + opinion, the opposite
+# of bulk AI text, and targets high-intent queries like "best free weather API".
+BEST_OF = [
+    ("openweathermap", "The default weather API. Free tier covers 60 calls/min and 1M calls/month, enough for most side projects. Generous historical data on paid plans."),
+    ("open-meteo", "Truly free: no API key, no signup. Gives you current conditions plus a 16-day forecast anywhere on earth. Ideal for quick demos and hackathons."),
+    ("github", "Read repos, issues, and commits without auth (with rate limits). The backbone of most dev-portfolio and open-source-dashboard projects."),
+    ("google-firebase", "Realtime database, authentication, and storage in one SDK. The fastest path from zero to a working mobile backend."),
+    ("coingecko", "Free crypto prices, market caps, and historical data. No key required for public endpoints, with generous rate limits."),
+    ("exchangerate-host", "Free currency conversion with no key required for basic lookups. Drop it straight into any pricing or checkout flow."),
+    ("nasa", "Astronomy Picture of the Day, Mars Rover photos, and near-Earth objects. A fantastic dataset for learning REST and building visual demos."),
+    ("unsplash", "High-quality royalty-free photos via a clean REST API. The standard choice for placeholder imagery and design tools."),
+    ("giphy", "Search and serve GIFs. Perfect for reactions, chat apps, and adding life to empty UI states."),
+    ("spotify", "Rich music metadata, audio features, and recommendations. Build playlists, mood detectors, or personal listening dashboards."),
+    ("tmdb", "Movie and TV metadata, posters, and cast lists. The modern successor to the older movie-database APIs."),
+    ("youtube", "Search videos, pull channel statistics, and embed thumbnails. Powers most video-aggregator and tutorial-discovery tools."),
+    ("twitter", "Post and read tweets via the v2 API. Useful for social dashboards and sentiment experiments (API key required)."),
+    ("reddit", "Read public posts and comments via JSON endpoints. Great for trend monitors and content aggregators."),
+    ("mapbox", "Maps, geocoding, and routing with a generous free tier. The go-to for any location-aware web application."),
+    ("rest-countries", "Country names, flags, currencies, and calling codes. No key, no signup -- the classic geo reference dataset."),
+]
+
+
+def render_best_of():
+    """Editorial 'best free APIs' page. Original curation targeting high-intent
+    SEO queries ('best free weather api', 'best api for a side project') and
+    built for social sharing. Every entry links to a real /api/<slug> page that
+    exists in this dataset -- nothing invented."""
+    by_slug = {a["slug"]: a for a in ITEMS}
+    used = []
+    cards = ""
+    for slug, note in BEST_OF:
+        a = by_slug.get(slug)
+        if not a:
+            continue  # dataset changed: skip rather than fabricate
+        rank = len(used) + 1
+        cards += (
+            '<article class="best-row">'
+            '<div class="best-rank">#' + str(rank) + '</div>'
+            '<div class="best-body">'
+            '<h3><a href="/api/' + esc(a["slug"]) + '">' + esc(a["name"]) + '</a></h3>'
+            '<p class="muted small">Category: <a href="/c/' + esc(a["categorySlug"]) + '">' + esc(a["category"]) + '</a> &middot; HTTPS ' + esc(a.get("https", "")) + ' &middot; Auth ' + esc(a.get("auth", "")) + '</p>'
+            '<p>' + esc(note) + '</p>'
+            '</div>'
+            '<a class="best-cta" href="/api/' + esc(a["slug"]) + '">View &rarr;</a>'
+            '</article>'
+        )
+        used.append(a)
+    intro = ("The " + str(len(used)) + " most useful public APIs we found across "
+             + str(len(ITEMS)) + " entries in our directory. Each one is free (or "
+             "has a meaningful free tier), well documented, and battle-tested by "
+             "the developer community. We picked these for side projects, "
+             "hackathons, and learning REST integration -- not because they pay us.")
+    body = (
+        '<section class="wrap">'
+        '<nav class="crumbs"><a href="/">Home</a> &rsaquo; <span>Best free APIs 2026</span></nav>'
+        '<p class="eyebrow">Editorial</p>'
+        '<h1>The ' + str(len(used)) + ' best free public APIs in 2026</h1>'
+        '<p class="lede">' + esc(intro) + '</p>'
+        '<div class="best-list">' + cards + '</div>'
+        + newsletter_section() +
+        '</section>'
+    )
+    item_list = {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "name": "Best free public APIs in 2026",
+        "itemListElement": [
+            {"@type": "ListItem", "position": i + 1,
+             "name": a["name"], "url": SITE_ORIGIN + "/api/" + a["slug"]}
+            for i, a in enumerate(used)
+        ],
+    }
+    extra = '<script type="application/ld+json">' + json.dumps(item_list) + '</script>'
+    return layout(
+        "Best free public APIs in 2026 - curated by " + SITE_NAME,
+        "The " + str(len(used)) + " most useful free APIs for side projects, "
+        "hackathons, and learning REST -- curated by " + SITE_NAME + ".",
+        SITE_ORIGIN + "/best-free-apis-2026",
+        body, extra)
+
+
+def render_rss():
+    """RSS feed of the directory. Lets the site be aggregated by feedly /
+    Inoreader / etc., a free recurring-traffic channel for developer sites."""
+    import datetime
+    now = datetime.datetime.now(datetime.timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
+    items = ""
+    for a in ITEMS[:25]:
+        link = SITE_ORIGIN + "/api/" + a["slug"]
+        items += (
+            "<item>"
+            "<title>" + esc(a["name"]) + " (" + esc(a["category"]) + ")</title>"
+            "<link>" + esc(link) + "</link>"
+            "<guid isPermaLink=\"true\">" + esc(link) + "</guid>"
+            "<description>" + esc(a["description"]) + "</description>"
+            "<category>" + esc(a["category"]) + "</category>"
+            "</item>\n"
+        )
+    return (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<rss version="2.0">\n<channel>\n'
+        '<title>' + esc(SITE_NAME) + '</title>\n'
+        '<link>' + esc(SITE_ORIGIN) + '</link>\n'
+        '<description>' + esc(SITE_TAGLINE) + '</description>\n'
+        '<language>en</language>\n'
+        '<lastBuildDate>' + now + '</lastBuildDate>\n'
+        + items +
+        '</channel>\n</rss>\n'
+    )
 
 
 def render_about():
@@ -408,12 +551,14 @@ def main():
     write(DIST / "about" / "index.html", render_about())
     write(DIST / "search" / "index.html", render_search())
     write(DIST / "404.html", render_404())
+    write(DIST / "best-free-apis-2026" / "index.html", render_best_of())
+    write(DIST / "feed.xml", render_rss())
     for c in CATS:
         write(DIST / "c" / c["categorySlug"] / "index.html", render_category(c))
     for a in ITEMS:
         write(DIST / "api" / a["slug"] / "index.html", render_detail(a))
     origin = SITE_ORIGIN
-    urls = [origin + "/", origin + "/categories", origin + "/about", origin + "/search"]
+    urls = [origin + "/", origin + "/categories", origin + "/about", origin + "/search", origin + "/best-free-apis-2026"]
     for c in CATS:
         urls.append(origin + "/c/" + c["categorySlug"])
     for a in ITEMS:

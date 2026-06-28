@@ -2,6 +2,7 @@ https://openapihub.410185103.workers.dev/
 https://openapihub.410185103.workers.dev/categories
 https://openapihub.410185103.workers.dev/about
 https://openapihub.410185103.workers.dev/search
+https://openapihub.410185103.workers.dev/best-free-apis-2026
 https://openapihub.410185103.workers.dev/c/development
 https://openapihub.410185103.workers.dev/c/games-comics
 https://openapihub.410185103.workers.dev/c/government

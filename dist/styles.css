@@ -116,3 +116,28 @@ h2{font-size:clamp(1.6rem,3vw,2.2rem);}
 .newsletter-form input:focus{outline:none;border-color:var(--accent);}
 .newsletter-form button{padding:0.8rem 1.4rem;border-radius:10px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#0d1117;font-weight:700;cursor:pointer;font-size:0.95rem;}
 .newsletter-note{margin:0.9rem 0 0;font-size:0.82rem;color:#6e7681;}
+
+/* ---- Best-of editorial page ---- */
+.lede{font-size:1.15rem;line-height:1.7;color:var(--muted);max-width:62ch;margin:1rem 0 2.2rem;}
+.best-list{display:flex;flex-direction:column;gap:1rem;margin-bottom:2rem;}
+.best-row{display:grid;grid-template-columns:auto 1fr auto;gap:1.2rem;align-items:start;padding:1.4rem 1.6rem;border:1px solid var(--line);border-radius:16px;background:var(--paper);transition:border-color .2s, transform .2s;}
+.best-row:hover{border-color:var(--accent);transform:translateY(-2px);}
+.best-rank{font-family:"Instrument Serif",serif;font-size:1.8rem;color:var(--accent);min-width:2.5rem;line-height:1;}
+.best-body h3{margin:0 0 0.3rem;font-size:1.2rem;}
+.best-body h3 a{color:var(--ink);text-decoration:none;}
+.best-body h3 a:hover{color:var(--accent);}
+.best-body p{margin:0.4rem 0 0;line-height:1.6;color:var(--ink);}
+.best-body .small{font-size:0.85rem;color:var(--muted);}
+.best-cta{align-self:center;white-space:nowrap;padding:0.55rem 1rem;border-radius:999px;border:1px solid var(--line);color:var(--ink);text-decoration:none;font-weight:600;font-size:0.9rem;}
+.best-cta:hover{background:var(--accent);color:#0d1117;border-color:var(--accent);}
+/* ---- Related APIs on detail pages ---- */
+.related-grid{grid-template-columns:repeat(3,1fr);margin-bottom:1.5rem;}
+.related-grid .api-card.related{display:block;padding:1rem;border:1px solid var(--line);border-radius:12px;text-decoration:none;background:var(--paper);}
+.related-grid .api-card.related:hover{border-color:var(--accent);}
+.related-grid .api-card.related h4{margin:0 0 0.3rem;font-size:0.98rem;color:var(--ink);}
+.related-grid .api-card.related .small{font-size:0.82rem;color:var(--muted);margin:0;line-height:1.4;}
+@media (max-width:700px){
+  .best-row{grid-template-columns:1fr;}
+  .best-cta{justify-self:start;}
+  .related-grid{grid-template-columns:1fr;}
+}
