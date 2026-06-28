@@ -1,4 +1,4 @@
-﻿"""Static site generator for OpenAPIHub."""
+"""Static site generator for OpenAPIHub."""
 import json, os, html, pathlib, shutil, sys
 
 SITE = pathlib.Path(__file__).resolve().parent
@@ -9,9 +9,45 @@ SITE_NAME = os.environ.get("SITE_NAME", "OpenAPIHub")
 SITE_TAGLINE = os.environ.get("SITE_TAGLINE", "A free directory of public APIs for developers")
 SITE_ORIGIN = os.environ.get("SITE_ORIGIN", "").rstrip("/")
 ADSENSE_CLIENT = os.environ.get("ADSENSE_CLIENT", "")
+# Analytics: free, cookieless. Either Cloudflare Web Analytics beacon token
+# (get it from dash.cloudflare.com -> Web Analytics -> Add a site) or a
+# self-hosted/Plausible Cloud domain. Leave blank to ship without analytics.
+CF_ANALYTICS_TOKEN = os.environ.get("CF_ANALYTICS_TOKEN", "")
+PLAUSIBLE_DOMAIN = os.environ.get("PLAUSIBLE_DOMAIN", "")
+# Affiliate base URLs. Append your real ref code as ?ref=YOUR_ID via env so
+# clicks are attributed to your account. Examples:
+#   AFFILIATE_VERCEL=https://vercel.com/?ref=your-vercel-ref
 AFFILIATE_VERCEL = os.environ.get("AFFILIATE_VERCEL", "https://vercel.com")
 AFFILIATE_RENDER = os.environ.get("AFFILIATE_RENDER", "https://render.com")
 AFFILIATE_SUPABASE = os.environ.get("AFFILIATE_SUPABASE", "https://supabase.com")
+# Donation / tip-jar link (BuyMeACoffee, Ko-fi, GitHub Sponsors). No approval
+# needed, pays out immediately. Leave blank to hide the CTA.
+DONATE_URL = os.environ.get("DONATE_URL", "")
+# utm_source stamped on every outgoing affiliate click so we can measure which
+# pages actually convert, in whatever analytics backend we later wire up.
+AFFILIATE_SOURCE = os.environ.get("AFFILIATE_SOURCE", "openapihub")
+
+
+def aff_url(base, medium, campaign):
+    """Stamp UTM params on an outgoing affiliate link so every click is
+    attributable, regardless of whether the destination ref param is set.
+    Keeps any existing query the env-configured base URL already carries."""
+    sep = "&" if "?" in base else "?"
+    return (base + sep + "utm_source=" + AFFILIATE_SOURCE
+            + "&utm_medium=" + medium + "&utm_campaign=" + campaign)
+
+
+def analytics_head():
+    """Return head snippet for whichever free cookieless analytics backend is
+    configured. Cloudflare Web Analytics is the default since the site is
+    already on Cloudflare; Plausible is a drop-in alternative."""
+    out = ""
+    if CF_ANALYTICS_TOKEN:
+        beacon = chr(123) + chr(34) + "token" + chr(34) + ": " + chr(34) + esc(CF_ANALYTICS_TOKEN) + chr(34) + chr(125)
+        out += "<script defer src=\"https://static.cloudflareinsights.com/beacon.min.js\" data-cf-beacon='" + beacon + "'></script>"
+    if PLAUSIBLE_DOMAIN:
+        out += '<script defer data-domain="' + esc(PLAUSIBLE_DOMAIN) + '" src="https://plausible.io/js/script.js"></script>'
+    return out
 
 
 def esc(s):
@@ -62,6 +98,7 @@ def layout(title, description, canonical, body, extra_head=""):
         '<link rel="stylesheet" href="/styles.css">\n'
         + adsense_line + "\n"
         + extra_head + "\n"
+        + analytics_head() + "\n"
         + '</head>\n<body>\n'
         '<header class="site-header"><div class="wrap">'
         '<a class="brand" href="/"><span class="brand-mark">{ }</span><span>' + esc(SITE_NAME) + '</span></a>'
@@ -75,7 +112,8 @@ def layout(title, description, canonical, body, extra_head=""):
         '<footer class="site-footer"><div class="wrap">'
         '<p>' + esc(SITE_NAME) + ' &middot; ' + esc(SITE_TAGLINE) + '</p>'
         '<p class="muted">Built from the open-source public-apis dataset. Affiliate links may earn us a commission.</p>'
-        '</div></footer>\n'
+        + ("" if not DONATE_URL else '<p class="footer-cta"><a class="donate-link" href="' + esc(DONATE_URL) + '" rel="noopener" target="_blank">Support this project &rarr;</a></p>')
+        + '</div></footer>\n'
         '</body>\n</html>\n'
     )
 
@@ -89,11 +127,19 @@ def ad_slot(label):
 
 
 def affiliate_rail():
+    # Each affiliate link is stamped with UTM params so clicks are attributable
+    # end-to-end. Set AFFILIATE_VERCEL etc. to include your real ?ref= code and
+    # the UTM tracking rides on top.
+    donate_li = ""
+    if DONATE_URL:
+        donate_li = ('<li class="rail-donate"><a href="' + esc(DONATE_URL)
+                     + '" rel="noopener" target="_blank">Found this useful? Buy me a coffee &hearts;</a></li>')
     return (
         '<aside class="rail"><h3>Sponsored</h3><ul class="rail-list">'
-        '<li><a href="' + esc(AFFILIATE_VERCEL) + '" rel="sponsored noopener" target="_blank">Deploy this API on Vercel &rarr;</a></li>'
-        '<li><a href="' + esc(AFFILIATE_RENDER) + '" rel="sponsored noopener" target="_blank">Host your backend on Render &rarr;</a></li>'
-        '<li><a href="' + esc(AFFILIATE_SUPABASE) + '" rel="sponsored noopener" target="_blank">Supabase: open-source Postgres + Auth &rarr;</a></li>'
+        '<li><a href="' + esc(aff_url(AFFILIATE_VERCEL, "affiliate", "rail-vercel")) + '" rel="sponsored noopener" target="_blank">Deploy this API on Vercel &rarr;</a></li>'
+        '<li><a href="' + esc(aff_url(AFFILIATE_RENDER, "affiliate", "rail-render")) + '" rel="sponsored noopener" target="_blank">Host your backend on Render &rarr;</a></li>'
+        '<li><a href="' + esc(aff_url(AFFILIATE_SUPABASE, "affiliate", "rail-supabase")) + '" rel="sponsored noopener" target="_blank">Supabase: open-source Postgres + Auth &rarr;</a></li>'
+        + donate_li +
         '</ul></aside>'
     )
 
@@ -199,7 +245,7 @@ def render_detail(a):
         '</ul>'
         '<div class="cta-row">'
         '<a class="button-primary" href="' + esc(a["url"]) + '" rel="nofollow noopener" target="_blank">Open documentation &rarr;</a>'
-        '<a class="button-secondary" href="' + esc(AFFILIATE_VERCEL) + '" rel="sponsored noopener" target="_blank">Deploy in 1 click on Vercel</a>'
+        '<a class="button-secondary" href="' + esc(aff_url(AFFILIATE_VERCEL, "affiliate", "detail-deploy")) + '" rel="sponsored noopener" target="_blank">Deploy in 1 click on Vercel</a>'
         '</div>'
         + ad_slot("In-detail ad") +
         '<h2>How to use ' + esc(a["name"]) + '</h2>'

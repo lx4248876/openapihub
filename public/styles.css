@@ -102,3 +102,8 @@ h2{font-size:clamp(1.6rem,3vw,2.2rem);}
   .api-grid{grid-template-columns:1fr;}
   .meta-list li{grid-template-columns:1fr;gap:0.2rem;}
 }
+.footer-cta{margin-top:0.6rem !important;}
+.donate-link{display:inline-block;padding:0.5rem 1rem;border-radius:999px;background:linear-gradient(135deg,#ff5e3a,#ffae00);color:#fff !important;font-weight:700;text-decoration:none;font-size:0.9rem;}
+.donate-link:hover{filter:brightness(1.05);}
+.rail-donate{margin-top:0.5rem;padding-top:0.6rem;border-top:1px dashed var(--line);}
+.rail-donate a{color:#ff5e3a !important;font-weight:600;}
