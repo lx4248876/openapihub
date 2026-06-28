@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: openapihub
+    runtime: node
+    plan: free
+    buildCommand: "true"
+    startCommand: node src/server.js
+    envVars:
+      - key: NODE_VERSION
+        value: 24.14.0
+      - key: SITE_NAME
+        value: OpenAPIHub
+      - key: SITE_ORIGIN
+        sync: false
+      - key: ADSENSE_CLIENT
+        sync: false
+      - key: AFFILIATE_VERCEL
+        sync: false
+      - key: AFFILIATE_RENDER
+        sync: false
+      - key: AFFILIATE_SUPABASE
+        sync: false

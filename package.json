@@ -1,0 +1,10 @@
+{
+  "name": "openapihub",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A free directory of public APIs for developers. Monetized via ads and affiliate links.",
+  "scripts": {
+    "fetch": "python ../scripts/fetch-apis-site.py",
+    "start": "node src/server.js"
+  }
+}
