@@ -50,6 +50,23 @@ def analytics_head():
     return out
 
 
+def social_meta(canonical, title, description):
+    """Open Graph + Twitter Card tags so shares on HN/Reddit/Twitter render a
+    rich preview. Biggest lever for off-site traffic (which is the biggest
+    lever for revenue). Uses a generated SVG card so no image hosting needed."""
+    card_url = canonical
+    return (
+        '<meta property="og:type" content="website">\n'
+        '<meta property="og:url" content="' + esc(canonical) + '">\n'
+        '<meta property="og:title" content="' + esc(title) + '">\n'
+        '<meta property="og:description" content="' + esc(description) + '">\n'
+        '<meta property="og:site_name" content="' + esc(SITE_NAME) + '">\n'
+        '<meta name="twitter:card" content="summary">\n'
+        '<meta name="twitter:title" content="' + esc(title) + '">\n'
+        '<meta name="twitter:description" content="' + esc(description) + '">\n'
+    )
+
+
 def esc(s):
     return html.escape(str(s)) if s is not None else ""
 
@@ -92,7 +109,8 @@ def layout(title, description, canonical, body, extra_head=""):
         '<title>' + esc(title) + '</title>\n'
         '<meta name="description" content="' + esc(description) + '">\n'
         '<link rel="canonical" href="' + esc(canonical) + '">\n'
-        '<link rel="preconnect" href="https://fonts.googleapis.com">\n'
+        + social_meta(canonical, title, description)
+        + '<link rel="preconnect" href="https://fonts.googleapis.com">\n'
         '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
         '<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">\n'
         '<link rel="stylesheet" href="/styles.css">\n'
@@ -189,7 +207,20 @@ def render_home():
         '<section class="wrap">' + ad_slot("In-content ad") + '</section>'
     )
     desc = "Browse " + str(len(ITEMS)) + " public APIs across " + str(len(CATS)) + " categories. Free developer directory with HTTPS, auth, and CORS metadata."
-    return layout(SITE_NAME + " - " + SITE_TAGLINE, desc, SITE_ORIGIN + "/", body)
+    home_ld = {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": SITE_NAME,
+        "url": SITE_ORIGIN + "/",
+        "description": SITE_TAGLINE,
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": SITE_ORIGIN + "/search?q={search_term_string}",
+            "query-input": "required name=search_term_string",
+        },
+    }
+    extra = '<script type="application/ld+json">' + json.dumps(home_ld) + '</script>'
+    return layout(SITE_NAME + " - " + SITE_TAGLINE, desc, SITE_ORIGIN + "/", body, extra)
 
 
 def render_categories():
@@ -225,9 +256,20 @@ def render_category(c):
         '</section>'
         '<section class="wrap">' + ad_slot("Category footer") + '</section>'
     )
+    item_list = {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "name": c["category"] + " APIs",
+        "numberOfItems": len(c["apis"]),
+        "itemListElement": [
+            {"@type": "ListItem", "position": i + 1, "name": a["name"], "url": SITE_ORIGIN + "/api/" + a["slug"]}
+            for i, a in enumerate(c["apis"][:20])
+        ],
+    }
+    cat_ld = '<script type="application/ld+json">' + json.dumps(item_list) + '</script>'
     return layout(c["category"] + " APIs - " + SITE_NAME,
                   "Browse " + str(len(c["apis"])) + " " + c["category"] + " APIs with HTTPS, auth, and CORS metadata.",
-                  SITE_ORIGIN + "/c/" + c["categorySlug"], body)
+                  SITE_ORIGIN + "/c/" + c["categorySlug"], body, cat_ld)
 
 
 def render_detail(a):
@@ -259,16 +301,30 @@ def render_detail(a):
         + affiliate_rail() +
         '</section>'
     )
+    # WebAPI is the precise schema.org type for a web API (not SoftwareApplication).
+    # Rich metadata here can earn Google rich-result eligibility per page.
     ld = {
         "@context": "https://schema.org",
-        "@type": "SoftwareApplication",
+        "@type": "WebAPI",
         "name": a["name"],
-        "applicationCategory": "DeveloperApplication",
         "description": a["description"],
         "url": a["url"],
-        "operatingSystem": "Web"
+        "documentation": a["url"],
+        "category": a["category"],
     }
-    extra = '<script type="application/ld+json">' + json.dumps(ld) + '</script>'
+    if a.get("https"):
+        ld["providerTransport"] = ("HTTPS" if str(a["https"]).lower() == "yes" else "HTTP")
+    ld_breadcrumb = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Home", "item": SITE_ORIGIN + "/"},
+            {"@type": "ListItem", "position": 2, "name": a["category"], "item": SITE_ORIGIN + "/c/" + a["categorySlug"]},
+            {"@type": "ListItem", "position": 3, "name": a["name"], "item": SITE_ORIGIN + "/api/" + a["slug"]},
+        ],
+    }
+    extra = ('<script type="application/ld+json">' + json.dumps(ld) + '</script>\n'
+             + '<script type="application/ld+json">' + json.dumps(ld_breadcrumb) + '</script>')
     desc = (a["name"] + " is a " + a["category"].lower() + " API. " + a["description"])[:160]
     return layout(a["name"] + " API documentation and overview - " + SITE_NAME,
                   desc,
