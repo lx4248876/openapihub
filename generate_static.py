@@ -7,7 +7,9 @@ DIST = SITE / "dist"
 
 SITE_NAME = os.environ.get("SITE_NAME", "OpenAPIHub")
 SITE_TAGLINE = os.environ.get("SITE_TAGLINE", "A free directory of public APIs for developers")
-SITE_ORIGIN = os.environ.get("SITE_ORIGIN", "").rstrip("/")
+# Default to the live Workers URL so canonical URLs, OG tags, and the
+# sitemap are valid even when SITE_ORIGIN is not set as a build variable.
+SITE_ORIGIN = os.environ.get("SITE_ORIGIN", "https://openapihub.410185103.workers.dev").rstrip("/")
 ADSENSE_CLIENT = os.environ.get("ADSENSE_CLIENT", "")
 # Analytics: free, cookieless. Either Cloudflare Web Analytics beacon token
 # (get it from dash.cloudflare.com -> Web Analytics -> Add a site) or a
